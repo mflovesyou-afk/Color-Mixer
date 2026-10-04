@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChromaHair Studio & Color Theory Master</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090d16;
+            color: #f8fafc;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .tab-btn.active {
+            border-bottom: 2px solid #ec4899;
+            color: #f472b6;
+            font-weight: 600;
+        }
+
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: #1e293b;
+            border-radius: 8px;
+            height: 6px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #ec4899;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+            transition: transform 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Color Wheel Animations */
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow { animation: spin-slow 25s linear infinite; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 antialiased selection:bg-pink-500 selection:text-white">
+
+    <!-- Top Header Navigation -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-600 rounded-xl shadow-lg shadow-pink-500/20">
+                    <i data-lucide="scissors" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-300 bg-clip-text text-transparent flex items-center gap-2">
+                        ChromaHair Studio <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/20">PRO Theory</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Hair Dye Formulation, Undertone Neutralization & Color Theory Academy</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs & Cheatsheet trigger -->
+            <div class="flex items-center space-x-3 sm:space-x-6">
+                <nav class="flex space-x-4 text-xs sm:text-sm font-medium">
+                    <button id="tab-lab-btn" class="tab-btn active py-5 flex items-center space-x-2 transition-colors">
+                        <i data-lucide="beaker" class="w-4 h-4"></i>
+                        <span>Lab & Simulator</span>
+                    </button>
+                    <button id="tab-matcher-btn" class="tab-btn text-slate-400 hover:text-slate-200 py-5 flex items-center space-x-2 transition-colors">
+                        <i data-lucide="camera" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Camera Matcher</span>
+                    </button>
+                    <button id="tab-recipes-btn" class="tab-btn text-slate-400 hover:text-slate-200 py-5 flex items-center space-x-2 transition-colors">
+                        <i data-lucide="book-open" class="w-4 h-4"></i>
+                        <span>Recipes (<span id="recipe-count">0</span>)</span>
+                    </button>
+                </nav>
+
+                <!-- Color Theory Cheatsheet Modal Trigger -->
+                <button id="open-cheatsheet-btn" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-md shadow-purple-600/30 transition transform hover:scale-105">
+                    <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                    <span class="hidden md:inline font-semibold">Theory Guide</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- WORKSPACE 1: DYE LAB & COLOR THEORY SIMULATOR -->
+        <section id="tab-lab" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Controls Column -->
+                <div class="lg:col-span-5 space-y-6">
+                    
+                    <!-- 1. BASE LEVEL & UNDERTONE SELECTOR -->
+                    <div class="glass-panel rounded-2xl p-5 shadow-2xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h2 class="font-semibold text-slate-100 flex items-center gap-2 text-sm sm:text-base">
+                                <i data-lucide="layers" class="w-4 h-4 text-pink-400"></i>
+                                1. Natural Base Level & Underlying Pigment
+                            </h2>
+                            <span id="base-level-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-pink-500/10 text-pink-300 border border-pink-500/30">
+                                Level 6 - Dark Blonde
+                            </span>
+                        </div>
+
+                        <!-- Level Swatches with Undertone Indicators -->
+                        <div>
+                            <div class="flex justify-between items-center text-xs text-slate-400 mb-2">
+                                <span>Hair Level Scale (1-10)</span>
+                                <span class="text-amber-400 flex items-center gap-1"><i data-lucide="flame" class="w-3 h-3"></i> Natural Warmth</span>
+                            </div>
+                            <div class="grid grid-cols-5 gap-2" id="level-matrix-grid">
+                                <!-- Dynamically generated level buttons -->
+                            </div>
+                        </div>
+
+                        <!-- Level Undertone Info Box -->
+                        <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div id="undertone-swatch" class="w-7 h-7 rounded-lg border border-white/20 shadow-inner" style="background-color: #d97706;"></div>
+                                <div>
+                                    <div class="text-[11px] text-slate-400">Exposed Natural Undertone</div>
+                                    <div id="undertone-name" class="text-xs font-semibold text-amber-300">Orange / Warm Gold</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[11px] text-slate-400">Counter Tone Needed</div>
+                                <div id="neutralizer-needed" class="text-xs font-bold text-indigo-400">Blue / Ash</div>
+                            </div>
+                        </div>
+
+                        <!-- Layering Mode Switch -->
+                        <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="layers-2" class="w-4 h-4 text-purple-400"></i>
+                                <div>
+                                    <div class="text-xs font-medium text-slate-200">Layer Over Previous Formula</div>
+                                    <div class="text-[10px] text-slate-400">Treat current canvas as starting hair color</div>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="layer-mode-toggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 2. DEVELOPER LIFT SELECTOR -->
+                    <div class="glass-panel rounded-2xl p-5 shadow-2xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h2 class="font-semibold text-slate-100 flex items-center gap-2 text-sm sm:text-base">
+                                <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+                                2. Developer Strength (Melanin Lift)
+                            </h2>
+                            <span id="dev-badge" class="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                                20 Vol (2 Levels Lift)
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-4 gap-2" id="developer-selector">
+                            <button data-vol="10" data-lift="1" class="dev-btn bg-slate-800 hover:bg-slate-700 p-2 rounded-xl text-center border border-slate-700 transition">
+                                <div class="text-xs font-bold text-slate-200">10 Vol</div>
+                                <div class="text-[10px] text-slate-400">+1 Level</div>
+                            </button>
+                            <button data-vol="20" data-lift="2" class="dev-btn bg-pink-600 text-white p-2 rounded-xl text-center border border-pink-500 font-semibold shadow-lg shadow-pink-600/30 transition">
+                                <div class="text-xs font-bold">20 Vol</div>
+                                <div class="text-[10px] text-pink-200">+2 Levels</div>
+                            </button>
+                            <button data-vol="30" data-lift="3" class="dev-btn bg-slate-800 hover:bg-slate-700 p-2 rounded-xl text-center border border-slate-700 transition">
+                                <div class="text-xs font-bold text-slate-200">30 Vol</div>
+                                <div class="text-[10px] text-slate-400">+3 Levels</div>
+                            </button>
+                            <button data-vol="40" data-lift="4" class="dev-btn bg-slate-800 hover:bg-slate-700 p-2 rounded-xl text-center border border-slate-700 transition">
+                                <div class="text-xs font-bold text-slate-200">40 Vol</div>
+                                <div class="text-[10px] text-slate-400">+4 Levels</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. DYE & TONER FORMULATION -->
+                    <div class="glass-panel rounded-2xl p-5 shadow-2xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h2 class="font-semibold text-slate-100 flex items-center gap-2 text-sm sm:text-base">
+                                <i data-lucide="flask-conical" class="w-4 h-4 text-purple-400"></i>
+                                3. Dye & Toner Recipe Mixer
+                            </h2>
+                            <button id="add-shade-btn" class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition shadow-md shadow-purple-600/30">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Shade
+                            </button>
+                        </div>
+
+                        <!-- Active Shades List -->
+                        <div id="shades-list" class="space-y-3 max-h-[220px] overflow-y-auto pr-1">
+                            <!-- Dynamic Shades Rendered Here -->
+                        </div>
+
+                        <!-- Presets Quick Add -->
+                        <div class="pt-2">
+                            <span class="text-[11px] text-slate-400 block mb-1.5">Colorist Toner Quick Presets:</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <button data-preset="violet" class="preset-btn text-[10px] bg-slate-800 hover:bg-purple-900/40 text-purple-300 border border-purple-500/30 px-2 py-1 rounded-md transition">Violet Anti-Yellow</button>
+                                <button data-preset="blue" class="preset-btn text-[10px] bg-slate-800 hover:bg-blue-900/40 text-blue-300 border border-blue-500/30 px-2 py-1 rounded-md transition">Blue Anti-Brass</button>
+                                <button data-preset="green" class="preset-btn text-[10px] bg-slate-800 hover:bg-emerald-900/40 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded-md transition">Green Anti-Red</button>
+                                <button data-preset="rose" class="preset-btn text-[10px] bg-slate-800 hover:bg-pink-900/40 text-pink-300 border border-pink-500/30 px-2 py-1 rounded-md transition">Rose Gold</button>
+                            </div>
+                        </div>
+
+                        <!-- Combined Mixed Dye Pill -->
+                        <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div id="blended-dye-swatch" class="w-8 h-8 rounded-lg shadow-inner border border-white/20" style="background-color: #8b5cf6;"></div>
+                                <div>
+                                    <div class="text-[11px] text-slate-400">Combined Formula Color</div>
+                                    <div id="blended-dye-hex" class="text-xs font-mono font-bold text-purple-300">#8B5CF6</div>
+                                </div>
+                            </div>
+
+                            <button id="save-recipe-btn" class="text-xs bg-pink-600 hover:bg-pink-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium transition shadow-md shadow-pink-600/30">
+                                <i data-lucide="bookmark" class="w-3.5 h-3.5"></i> Save Recipe
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Preview & Color Theory Explanation Column -->
+                <div class="lg:col-span-7 space-y-6 flex flex-col">
+                    
+                    <!-- CANVAS VISUALIZER WITH COMPARISON SLIDER -->
+                    <div class="glass-panel rounded-2xl p-5 shadow-2xl flex-1 flex flex-col">
+                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3 mb-4">
+                            <div>
+                                <h2 class="font-semibold text-slate-100 flex items-center gap-2 text-sm sm:text-base">
+                                    <i data-lucide="eye" class="w-4 h-4 text-pink-400"></i>
+                                    Hair Visualizer & Side-by-Side Comparison
+                                </h2>
+                                <p class="text-xs text-slate-400">Drag comparison slider to see before (base/lifted) vs after formula application</p>
+                            </div>
+
+                            <div class="flex items-center space-x-2">
+                                <button id="view-strands-btn" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-pink-600 text-white">Strands</button>
+                                <button id="view-split-btn" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:text-white">Split</button>
+                            </div>
+                        </div>
+
+                        <!-- Canvas Container with Interactive Comparison Overlay -->
+                        <div class="relative flex-1 min-h-[360px] bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex items-center justify-center">
+                            <!-- Main Visual Canvas -->
+                            <canvas id="hair-canvas" width="640" height="420" class="max-w-full max-h-full object-contain"></canvas>
+
+                            <!-- Comparison Split Overlay Bar -->
+                            <div id="split-slider-container" class="absolute inset-0 pointer-events-none flex items-center">
+                                <div id="split-line" class="absolute top-0 bottom-0 w-0.5 bg-pink-400 shadow-[0_0_12px_#ec4899]" style="left: 50%;">
+                                    <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-pink-600 border-2 border-white rounded-full flex items-center justify-center shadow-lg text-white pointer-events-auto cursor-ew-resize">
+                                        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Compare Slider Bar -->
+                        <div class="mt-4 flex items-center space-x-4">
+                            <span class="text-xs text-slate-400 font-medium">Original Canvas</span>
+                            <input type="range" id="compare-slider" min="0" max="100" value="50" class="flex-1">
+                            <span class="text-xs text-pink-400 font-medium">Process Result</span>
+                        </div>
+                    </div>
+
+                    <!-- REAL-TIME COLOR THEORY EDUCATOR ENGINE -->
+                    <div class="glass-panel rounded-2xl p-5 shadow-2xl border-l-4 border-l-purple-500 space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                            <h3 class="font-semibold text-purple-300 flex items-center gap-2 text-sm">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
+                                Colorist Theory Explanation Engine
+                            </h3>
+                            <span class="text-[10px] font-mono bg-purple-500/10 text-purple-300 px-2 py-0.5 rounded border border-purple-500/20">Live Analysis</span>
+                        </div>
+
+                        <!-- Dynamic Explanation Text -->
+                        <div id="theory-explanation-text" class="text-xs leading-relaxed text-slate-300 space-y-2">
+                            <!-- Dynamically generated explanation -->
+                        </div>
+
+                        <!-- Neutralization Formula Meter -->
+                        <div class="pt-2 flex items-center justify-between text-xs bg-slate-950/80 p-3 rounded-xl border border-slate-800/80">
+                            <div class="space-y-0.5">
+                                <div class="text-[10px] text-slate-400">Undertone Counter balance:</div>
+                                <div id="theory-balance-status" class="font-bold text-amber-400">Warmth Dominant (Needs Violet/Blue)</div>
+                            </div>
+                            <div id="theory-math-chip" class="font-mono text-[11px] bg-slate-800 px-2.5 py-1 rounded-lg text-slate-300 border border-slate-700">
+                                Target Tone: Level 7 Neutral Warm
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- WORKSPACE 2: CAMERA COLOR MATCHER -->
+        <section id="tab-matcher" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <div class="lg:col-span-8 glass-panel rounded-2xl p-5 shadow-2xl space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="camera" class="w-5 h-5 text-pink-400"></i>
+                            <h2 class="font-semibold text-slate-100">Camera & Photo Eyedropper Sampler</h2>
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+                            <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl cursor-pointer border border-slate-700 flex items-center gap-1.5 transition">
+                                <i data-lucide="upload" class="w-3.5 h-3.5"></i> Upload Image
+                                <input type="file" id="image-upload-input" accept="image/*" class="hidden">
+                            </label>
+                            <button id="toggle-webcam-btn" class="bg-pink-600 hover:bg-pink-500 text-white text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 transition shadow-md shadow-pink-600/30">
+                                <i data-lucide="video" class="w-3.5 h-3.5"></i> Live Camera
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Canvas/Video Display Area -->
+                    <div class="relative w-full h-[400px] bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex items-center justify-center">
+                        <video id="webcam-elem" autoplay playsinline class="hidden w-full h-full object-contain"></video>
+                        <canvas id="matcher-canvas" class="max-w-full max-h-full cursor-crosshair"></canvas>
+
+                        <button id="capture-webcam-btn" class="hidden absolute bottom-4 bg-pink-600 hover:bg-pink-500 text-white font-medium text-xs px-4 py-2 rounded-full shadow-xl flex items-center gap-1.5">
+                            <i data-lucide="aperture" class="w-4 h-4"></i> Capture Frame
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Analysis Sidebar -->
+                <div class="lg:col-span-4 glass-panel rounded-2xl p-5 shadow-2xl space-y-5">
+                    <h3 class="font-semibold text-slate-100 border-b border-slate-800 pb-3 flex items-center gap-2">
+                        <i data-lucide="pipette" class="w-4 h-4 text-purple-400"></i>
+                        Sample Color Breakdown
+                    </h3>
+
+                    <div class="flex items-center space-x-4">
+                        <div id="sample-swatch" class="w-16 h-16 rounded-2xl border-2 border-slate-700 shadow-xl" style="background-color: #8b4513;"></div>
+                        <div>
+                            <div id="sample-hex" class="text-lg font-mono font-bold text-white">#8B4513</div>
+                            <div id="sample-rgb" class="text-xs font-mono text-slate-400">rgb(139, 69, 19)</div>
+                            <div id="sample-level" class="text-xs font-semibold text-pink-400 mt-1">Level 4 - Medium Brown</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Exposed Warmth:</span>
+                            <span id="sample-warmth" class="font-medium text-amber-300">Red-Orange</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Counter Toner Needed:</span>
+                            <span id="sample-counter" class="font-medium text-blue-400">Blue Ash</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-2">
+                        <button id="use-sample-as-base" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs py-2.5 rounded-xl border border-slate-700 font-medium transition flex items-center justify-center gap-2">
+                            <i data-lucide="corner-down-right" class="w-3.5 h-3.5"></i> Set as Starting Base Color
+                        </button>
+                        <button id="use-sample-as-dye" class="w-full bg-pink-600 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl font-medium transition shadow-md shadow-pink-600/30 flex items-center justify-center gap-2">
+                            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add to Active Dye Formula
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- WORKSPACE 3: SAVED FORMULA RECIPE BOOK -->
+        <section id="tab-recipes" class="hidden space-y-6">
+            <div class="glass-panel rounded-2xl p-5 shadow-2xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h2 class="font-semibold text-slate-100 flex items-center gap-2">
+                            <i data-lucide="book-open" class="w-5 h-5 text-pink-400"></i>
+                            Saved Color Recipe Cards
+                        </h2>
+                        <p class="text-xs text-slate-400">Manage and export your custom colorist formulation recipes</p>
+                    </div>
+                </div>
+
+                <!-- Grid of Saved Recipes -->
+                <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Dynamic Recipe Cards -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- COLOR THEORY CHEATSHEET MODAL -->
+    <div id="cheatsheet-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="graduation-cap" class="w-5 h-5 text-pink-400"></i>
+                    <h3 class="font-bold text-slate-100 text-base">Hair Color Theory Master Cheatsheet</h3>
+                </div>
+                <button id="close-cheatsheet-btn" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto space-y-6 text-xs text-slate-300">
+                
+                <!-- 1. The Color Wheel & Neutralization Rule -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <div>
+                        <h4 class="font-bold text-pink-400 text-sm mb-1">1. The Law of Neutralization (Opposing Tones)</h4>
+                        <p class="leading-relaxed">
+                            Colors directly opposite each other on the color wheel cancel each other out to create a neutral tone.
+                        </p>
+                        <ul class="mt-2 space-y-1 font-mono text-[11px]">
+                            <li class="text-purple-300"><span class="font-bold text-amber-300">Yellow</span> + <span class="font-bold">Violet</span> = Neutral Beige/Platinum</li>
+                            <li class="text-blue-300"><span class="font-bold text-orange-400">Orange</span> + <span class="font-bold">Blue</span> = Neutral Brown/Ash Blonde</li>
+                            <li class="text-emerald-300"><span class="font-bold text-red-400">Red</span> + <span class="font-bold">Green</span> = Neutral Brunette</li>
+                        </ul>
+                    </div>
+
+                    <!-- Visual Color Wheel Diagram -->
+                    <div class="relative w-40 h-40 mx-auto flex items-center justify-center">
+                        <div class="w-36 h-36 rounded-full border-4 border-slate-800 bg-gradient-to-tr from-yellow-400 via-purple-600 to-blue-500 p-2 animate-spin-slow opacity-80"></div>
+                        <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-center text-slate-200">
+                            Color Wheel<br>Balance
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Hair Level System & Natural Undertones -->
+                <div class="space-y-2">
+                    <h4 class="font-bold text-amber-400 text-sm">2. Standard Level Chart & Natural Exposed Warmth</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse font-mono text-[11px]">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400">
+                                    <th class="py-1.5">Level</th>
+                                    <th class="py-1.5">Hair Level Name</th>
+                                    <th class="py-1.5">Underlying Warmth</th>
+                                    <th class="py-1.5">Counter Toner</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60">
+                                <tr><td class="py-1">1-3</td><td>Dark Brunette</td><td class="text-red-400">Dark Red</td><td class="text-emerald-400">Green / Matt</td></tr>
+                                <tr><td class="py-1">4-5</td><td>Medium/Light Brown</td><td class="text-orange-500">Red-Orange</td><td class="text-teal-400">Blue-Green</td></tr>
+                                <tr><td class="py-1">6</td><td>Dark Blonde</td><td class="text-orange-400">Orange</td><td class="text-blue-400">Blue (Ash)</td></tr>
+                                <tr><td class="py-1">7</td><td>Medium Blonde</td><td class="text-amber-400">Yellow-Orange</td><td class="text-indigo-400">Blue-Violet</td></tr>
+                                <tr><td class="py-1">8-9</td><td>Light / Very Light Blonde</td><td class="text-yellow-300">Yellow</td><td class="text-purple-400">Violet</td></tr>
+                                <tr><td class="py-1">10</td><td>Platinum Blonde</td><td class="text-yellow-100">Pale Yellow</td><td class="text-purple-300">Soft Pearl Violet</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 border border-slate-700 text-slate-200 px-4 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-2 z-50">
+        <i data-lucide="check-circle" class="w-4 h-4 text-pink-400"></i>
+        <span id="toast-text" class="text-xs font-medium">Notification</span>
+    </div>
+
+    <script>
+        // HAIR COLOR MATRIX DATA
+        const LevelData = [
+            { level: 1, name: 'Level 1 Black', hex: '#0a0908', undertone: 'Dark Red-Brown', undertoneHex: '#3b120c', counter: 'Green' },
+            { level: 2, name: 'Level 2 Darkest Brown', hex: '#1c120c', undertone: 'Dark Red', undertoneHex: '#52140e', counter: 'Green' },
+            { level: 3, name: 'Level 3 Dark Brown', hex: '#2b1b12', undertone: 'Red', undertoneHex: '#781d13', counter: 'Green / Ash' },
+            { level: 4, name: 'Level 4 Medium Brown', hex: '#4a2e1b', undertone: 'Red-Orange', undertoneHex: '#9e341b', counter: 'Blue-Green' },
+            { level: 5, name: 'Level 5 Light Brown', hex: '#63422b', undertone: 'Orange-Red', undertoneHex: '#b84a1d', counter: 'Blue' },
+            { level: 6, name: 'Level 6 Dark Blonde', hex: '#8a6240', undertone: 'Orange', undertoneHex: '#d96b27', counter: 'Blue Ash' },
+            { level: 7, name: 'Level 7 Medium Blonde', hex: '#b38b59', undertone: 'Yellow-Orange', undertoneHex: '#e38e2b', counter: 'Blue-Violet' },
+            { level: 8, name: 'Level 8 Light Blonde', hex: '#d4b279', undertone: 'Yellow', undertoneHex: '#f5b82e', counter: 'Violet' },
+            { level: 9, name: 'Level 9 Very Light Blonde', hex: '#ebd29b', undertone: 'Light Yellow', undertoneHex: '#facc15', counter: 'Violet' },
+            { level: 10, name: 'Level 10 Platinum Blonde', hex: '#f7e7c4', undertone: 'Pale Yellow', undertoneHex: '#fef08a', counter: 'Soft Pearl Violet' }
+        ];
+
+        // GLOBAL APP STATE
+        let state = {
+            baseLevel: 6,
+            baseHex: '#8a6240',
+            layeringActive: false,
+            previousLayerHex: null,
+            developerVol: 20,
+            developerLift: 2,
+            shades: [
+                { id: '1', name: 'Violet Pearl Toner', hex: '#8b5cf6', ratio: 60 },
+                { id: '2', name: 'Ash Blue Toner', hex: '#3b82f6', ratio: 40 }
+            ],
+            compareSliderVal: 50,
+            viewMode: 'strands',
+            savedRecipes: JSON.parse(localStorage.getItem('chroma_recipes') || '[]'),
+            sampledHex: '#8b4513'
+        };
+
+        // DOM ELEMENTS
+        const hairCanvas = document.getElementById('hair-canvas');
+        const ctx = hairCanvas.getContext('2d');
+        const matcherCanvas = document.getElementById('matcher-canvas');
+        const matcherCtx = matcherCanvas.getContext('2d');
+        const webcamElem = document.getElementById('webcam-elem');
+
+        // UTILITY FUNCTIONS
+        function hexToRgb(hex) {
+            let c = hex.replace('#', '');
+            if (c.length === 3) c = c.split('').map(x => x + x).join('');
+            const num = parseInt(c, 16);
+            return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+        }
+
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(x => {
+                const hex = Math.round(Math.max(0, Math.min(255, x))).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
+        }
+
+        // CALCULATE COMBINED DYE FORMULA
+        function getBlendedDyeHex() {
+            if (state.shades.length === 0) return '#000000';
+            let total = state.shades.reduce((sum, s) => sum + s.ratio, 0) || 1;
+            let rSum = 0, gSum = 0, bSum = 0;
+
+            state.shades.forEach(s => {
+                const [r, g, b] = hexToRgb(s.hex);
+                const weight = s.ratio / total;
+                rSum += r * weight;
+                gSum += g * weight;
+                bSum += b * weight;
+            });
+
+            return rgbToHex(rSum, gSum, bSum);
+        }
+
+        // SIMULATE LIFT + DYE OVERLAY CHEMISTRY
+        function processHairFormula() {
+            // Determine starting canvas
+            let startHex = state.layeringActive && state.previousLayerHex ? state.previousLayerHex : state.baseHex;
+            let [bR, bG, bB] = hexToRgb(startHex);
+
+            // Apply Developer Melanin Lift
+            const targetLiftedLevel = Math.min(10, state.baseLevel + state.developerLift);
+            const liftedLevelData = LevelData.find(l => l.level === targetLiftedLevel) || LevelData[9];
+
+            // Blend lifted underlying warmth
+            const liftFactor = (state.developerLift * 0.15);
+            let liftedR = bR + (liftedLevelData.hex ? hexToRgb(liftedLevelData.hex)[0] - bR ) * liftFactor;
+            let liftedG = bG + (liftedLevelData.hex ? hexToRgb(liftedLevelData.hex)[1] - bG ) * liftFactor;
+            let liftedB = bB + (liftedLevelData.hex ? hexToRgb(liftedLevelData.hex)[2] - bB ) * liftFactor;
+
+            const liftedHex = rgbToHex(liftedR, liftedG, liftedB);
+
+            // Deposit Dye Overlay Translucent Pigments
+            const dyeHex = getBlendedDyeHex();
+            const [dR, dG, dB] = hexToRgb(dyeHex);
+
+            // Multiply & Neutralization Overlay
+            const finalR = Math.round((liftedR * dR) / 255 * 1.15);
+            const finalG = Math.round((liftedG * dG) / 255 * 1.15);
+            const finalB = Math.round((liftedB * dB) / 255 * 1.15);
+
+            const finalHex = rgbToHex(Math.min(255, finalR), Math.min(255, finalG), Math.min(255, finalB));
+
+            return {
+                startHex,
+                liftedHex,
+                dyeHex,
+                finalHex,
+                targetLevel: targetLiftedLevel
+            };
+        }
+
+        function renderHairCanvas() {
+            const w = hairCanvas.width;
+            const h = hairCanvas.height;
+            const computed = processHairFormula();
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Render Hair Strands
+            const numStrands = 160;
+            const splitX = (w * (state.compareSliderVal / 100));
+
+            const startRgb = hexToRgb(computed.startHex);
+            const finalRgb = hexToRgb(computed.finalHex);
+
+            for (let i = 0; i < numStrands; i++) {
+                const xStart = (w / numStrands) * i;
+
+                ctx.beginPath();
+                ctx.moveTo(xStart, 0);
+
+                const cp1x = xStart + Math.sin(i * 0.1) * 35;
+                const cp1y = h * 0.4;
+                const cp2x = xStart - Math.cos(i * 0.1) * 25;
+                const cp2y = h * 0.7;
+                const endX = xStart + Math.sin(i * 0.05) * 15;
+
+                ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, h);
+
+                // Use Split position to render Before (Left) vs After (Right)
+                const isLeftSplit = xStart < splitX;
+                const rgb = isLeftSplit ? startRgb : finalRgb;
+
+                const variation = (Math.sin(i * 1.8) * 20);
+                const r = Math.min(255, Math.max(0, rgb[0] + variation));
+                const g = Math.min(255, Math.max(0, rgb[1] + variation));
+                const b = Math.min(255, Math.max(0, rgb[2] + variation));
+
+                ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.lineWidth = 3.5;
+                ctx.globalAlpha = 0.9;
+                ctx.stroke();
+            }
+
+            // Shine Layer
+            const grad = ctx.createLinearGradient(0, h * 0.35, w, h * 0.45);
+            grad.addColorStop(0, 'rgba(255,255,255,0)');
+            grad.addColorStop(0.5, 'rgba(255,255,255,0.15)');
+            grad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Update UI elements
+            document.getElementById('blended-dye-swatch').style.backgroundColor = computed.dyeHex;
+            document.getElementById('blended-dye-hex').innerText = computed.dyeHex.toUpperCase();
+
+            updateTheoryExplanation(computed);
+        }
+
+        // UPDATE LIVE COLOR THEORY EDUCATOR ENGINE
+        function updateTheoryExplanation(computed) {
+            const levelInfo = LevelData.find(l => l.level === state.baseLevel) || LevelData[5];
+            const textElem = document.getElementById('theory-explanation-text');
+
+            let text = `<p>Starting with <strong>${levelInfo.name}</strong>, developer lift (${state.developerVol} Vol) raises the hair to <strong>Level ${computed.targetLevel}</strong>, exposing natural <strong>${levelInfo.undertone}</strong> warmth pigments.</p>`;
+
+            text += `<p>Your mixed formula deposits <strong>${computed.dyeHex.toUpperCase()}</strong>. Color theory rules apply: tone overlay balances exposed warmth.</p>`;
+
+            textElem.innerHTML = text;
+            document.getElementById('theory-math-chip').innerText = `Est. Level ${computed.targetLevel} Result`;
+        }
+
+        // RENDER LEVEL MATRIX BUTTONS
+        function renderLevelMatrix() {
+            const grid = document.getElementById('level-matrix-grid');
+            grid.innerHTML = '';
+
+            LevelData.forEach(item => {
+                const isSelected = state.baseLevel === item.level;
+                const btn = document.createElement('button');
+                btn.className = `h-10 rounded-xl border flex flex-col items-center justify-center p-1 transition-all ${
+                    isSelected ? 'border-pink-500 ring-2 ring-pink-500/50 scale-105 z-10' : 'border-slate-800 hover:border-slate-600'
+                }`;
+                btn.style.backgroundColor = item.hex;
+
+                btn.innerHTML = `<span class="text-[10px] font-bold ${item.level > 6 ? 'text-slate-900' : 'text-white'}">L${item.level}</span>`;
+
+                btn.addEventListener('click', () => {
+                    state.baseLevel = item.level;
+                    state.baseHex = item.hex;
+                    document.getElementById('base-level-badge').innerText = item.name;
+                    document.getElementById('undertone-swatch').style.backgroundColor = item.undertoneHex;
+                    document.getElementById('undertone-name').innerText = item.undertone;
+                    document.getElementById('neutralizer-needed').innerText = item.counter;
+
+                    renderLevelMatrix();
+                    renderHairCanvas();
+                });
+
+                grid.appendChild(btn);
+            });
+        }
+
+        // RENDER DYE SHADES LIST
+        function renderShadesList() {
+            const container = document.getElementById('shades-list');
+            container.innerHTML = '';
+
+            state.shades.forEach((shade, index) => {
+                const div = document.createElement('div');
+                div.className = 'bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1.5 text-xs';
+
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <input type="color" value="${shade.hex}" data-index="${index}" class="shade-color w-6 h-6 rounded bg-transparent border-0 cursor-pointer">
+                            <input type="text" value="${shade.name}" data-index="${index}" class="shade-name bg-transparent font-medium text-slate-200 focus:outline-none w-32 border-b border-transparent focus:border-pink-500">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-mono text-pink-400 font-semibold text-[11px]">${shade.ratio}%</span>
+                            ${state.shades.length > 1 ? `<button data-index="${index}" class="remove-shade-btn text-slate-500 hover:text-red-400"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
+                        </div>
+                    </div>
+                    <input type="range" min="10" max="100" value="${shade.ratio}" data-index="${index}" class="shade-ratio-slider w-full">
+                `;
+
+                container.appendChild(div);
+            });
+
+            lucide.createIcons();
+            attachShadeEvents();
+        }
+
+        function attachShadeEvents() {
+            document.querySelectorAll('.shade-color').forEach(inp => {
+                inp.addEventListener('input', (e) => {
+                    state.shades[e.target.dataset.index].hex = e.target.value;
+                    renderHairCanvas();
+                });
+            });
+
+            document.querySelectorAll('.shade-name').forEach(inp => {
+                inp.addEventListener('change', (e) => {
+                    state.shades[e.target.dataset.index].name = e.target.value;
+                });
+            });
+
+            document.querySelectorAll('.shade-ratio-slider').forEach(inp => {
+                inp.addEventListener('input', (e) => {
+                    state.shades[e.target.dataset.index].ratio = parseInt(e.target.value);
+                    renderShadesList();
+                    renderHairCanvas();
+                });
+            });
+
+            document.querySelectorAll('.remove-shade-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    state.shades.splice(e.currentTarget.dataset.index, 1);
+                    renderShadesList();
+                    renderHairCanvas();
+                });
+            });
+        }
+
+        // RECIPES SAVING & EXPORT ENGINE
+        function renderRecipeCards() {
+            const grid = document.getElementById('recipes-grid');
+            document.getElementById('recipe-count').innerText = state.savedRecipes.length;
+
+            if (state.savedRecipes.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-8 text-xs text-slate-500">No saved recipes yet. Formulate a dye formula and click "Save Recipe"!</div>`;
+                return;
+            }
+
+            grid.innerHTML = '';
+            state.savedRecipes.forEach((recipe, idx) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3';
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <h4 class="font-bold text-slate-200 text-xs">${recipe.title}</h4>
+                        <div class="w-6 h-6 rounded-md shadow border border-white/20" style="background-color: ${recipe.dyeHex}"></div>
+                    </div>
+                    <div class="text-[11px] text-slate-400 space-y-1">
+                        <div>Base Level: <span class="text-slate-200 font-semibold">${recipe.baseLevel}</span></div>
+                        <div>Developer: <span class="text-amber-300 font-semibold">${recipe.devVol} Vol</span></div>
+                    </div>
+                    <div class="pt-2 flex justify-between">
+                        <button onclick="loadRecipe(${idx})" class="text-[11px] text-pink-400 hover:text-pink-300 font-medium">Load Recipe</button>
+                        <button onclick="deleteRecipe(${idx})" class="text-[11px] text-slate-500 hover:text-red-400">Delete</button>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        window.loadRecipe = function(idx) {
+            const r = state.savedRecipes[idx];
+            state.baseLevel = r.baseLevel;
+            state.developerVol = r.devVol;
+            state.shades = [...r.shades];
+
+            renderLevelMatrix();
+            renderShadesList();
+            renderHairCanvas();
+
+            document.getElementById('tab-lab-btn').click();
+            showToast(`Loaded recipe "${r.title}"`);
+        };
+
+        window.deleteRecipe = function(idx) {
+            state.savedRecipes.splice(idx, 1);
+            localStorage.setItem('chroma_recipes', JSON.stringify(state.savedRecipes));
+            renderRecipeCards();
+            showToast('Deleted recipe card.');
+        };
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-text').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        // INITIALIZATION
+        window.onload = function() {
+            lucide.createIcons();
+            renderLevelMatrix();
+            renderShadesList();
+            renderRecipeCards();
+            renderHairCanvas();
+
+            // Tab Navigation
+            document.getElementById('tab-lab-btn').addEventListener('click', (e) => {
+                switchTab('tab-lab', e.currentTarget);
+            });
+            document.getElementById('tab-matcher-btn').addEventListener('click', (e) => {
+                switchTab('tab-matcher', e.currentTarget);
+            });
+            document.getElementById('tab-recipes-btn').addEventListener('click', (e) => {
+                switchTab('tab-recipes', e.currentTarget);
+            });
+
+            function switchTab(id, btn) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                ['tab-lab', 'tab-matcher', 'tab-recipes'].forEach(s => {
+                    document.getElementById(s).classList.add('hidden');
+                });
+                document.getElementById(id).classList.remove('hidden');
+            }
+
+            // Cheatsheet Modal Events
+            document.getElementById('open-cheatsheet-btn').addEventListener('click', () => {
+                document.getElementById('cheatsheet-modal').classList.remove('hidden');
+            });
+            document.getElementById('close-cheatsheet-btn').addEventListener('click', () => {
+                document.getElementById('cheatsheet-modal').classList.add('hidden');
+            });
+
+            // Developer Selection
+            document.querySelectorAll('.dev-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.dev-btn').forEach(b => {
+                        b.className = 'dev-btn bg-slate-800 hover:bg-slate-700 p-2 rounded-xl text-center border border-slate-700 transition';
+                    });
+                    const target = e.currentTarget;
+                    target.className = 'dev-btn bg-pink-600 text-white p-2 rounded-xl text-center border border-pink-500 font-semibold shadow-lg shadow-pink-600/30 transition';
+
+                    state.developerVol = parseInt(target.dataset.vol);
+                    state.developerLift = parseInt(target.dataset.lift);
+                    document.getElementById('dev-badge').innerText = `${state.developerVol} Vol (+${state.developerLift} Levels)`;
+
+                    renderHairCanvas();
+                });
+            });
+
+            // Compare Slider Sync
+            const compareSlider = document.getElementById('compare-slider');
+            const splitLine = document.getElementById('split-line');
+
+            compareSlider.addEventListener('input', (e) => {
+                state.compareSliderVal = parseInt(e.target.value);
+                splitLine.style.left = `${state.compareSliderVal}%`;
+                renderHairCanvas();
+            });
+
+            // Add Shade Button
+            document.getElementById('add-shade-btn').addEventListener('click', () => {
+                state.shades.push({
+                    id: Date.now().toString(),
+                    name: 'Custom Shade',
+                    hex: '#ec4899',
+                    ratio: 50
+                });
+                renderShadesList();
+                renderHairCanvas();
+            });
+
+            // Presets Buttons
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const preset = e.currentTarget.dataset.preset;
+                    if (preset === 'violet') state.shades = [{ id: '1', name: 'Violet Anti-Yellow Toner', hex: '#8b5cf6', ratio: 100 }];
+                    if (preset === 'blue') state.shades = [{ id: '1', name: 'Blue Ash Toner', hex: '#3b82f6', ratio: 100 }];
+                    if (preset === 'green') state.shades = [{ id: '1', name: 'Green Anti-Red Toner', hex: '#10b981', ratio: 100 }];
+                    if (preset === 'rose') state.shades = [{ id: '1', name: 'Rose Gold Pigment', hex: '#f472b6', ratio: 70 }, { id: '2', name: 'Golden Glow', hex: '#f59e0b', ratio: 30 }];
+
+                    renderShadesList();
+                    renderHairCanvas();
+                });
+            });
+
+            // Save Recipe
+            document.getElementById('save-recipe-btn').addEventListener('click', () => {
+                const title = prompt('Enter a title for this color formulation:', 'Summer Blonde Formula');
+                if (title) {
+                    state.savedRecipes.push({
+                        title,
+                        baseLevel: state.baseLevel,
+                        devVol: state.developerVol,
+                        shades: [...state.shades],
+                        dyeHex: getBlendedDyeHex()
+                    });
+                    localStorage.setItem('chroma_recipes', JSON.stringify(state.savedRecipes));
+                    renderRecipeCards();
+                    showToast('Recipe saved to Recipe Book!');
+                }
+            });
+
+            // Eyedropper Eyedrop canvas setup
+            matcherCanvas.width = 500;
+            matcherCanvas.height = 350;
+            matcherCtx.fillStyle = '#3b1d11';
+            matcherCtx.fillRect(0, 0, 500, 350);
+        };
+    </script>
+</body>
+</html>
